@@ -63,7 +63,7 @@ namespace ImageToAscii
 
             for (int b = 0, t = 0; b < bitmap.Height; b += 10, t++)
             {
-                for (int a = bitmap.Width - 1; a >= 0; a -= 10)
+                for (int a = 0; a < bitmap.Width; a += 10)
                 {
 
                     Color c = bitmap.GetPixel(a, b);
