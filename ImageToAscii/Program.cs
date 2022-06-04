@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Threading;
-using System.Windows;
-using WebEye.Controls.Wpf;
 
 namespace ImageToAscii
 {
-    class Program
+	class Program
     {
         static void Main(string[] args)
         {

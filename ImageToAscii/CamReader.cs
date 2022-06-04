@@ -1,66 +1,48 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using WebEye.Controls.Wpf;
+using AForge.Video;
+using AForge.Video.DirectShow;
 
 namespace ImageToAscii
 {
-    class CamReader
+	class CamReader
     {
         public delegate void OnBitmapChanged(Bitmap bitmap);
         public event OnBitmapChanged onBitmapChanged;
 
-        Bitmap image = null;
-        WebCameraControl webCameraControl;
-        WebCameraId camera = null;
+		private FilterInfoCollection filterInfoCollection;
+		private VideoCaptureDevice captureDevice;
 
         public CamReader()
         {
-            Thread t = new Thread(ThreadProc);
-            t.SetApartmentState(ApartmentState.STA);
+			filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
 
-            t.Start();
-        }
+			Console.WriteLine("== Select the camera to be converted ==");
 
-        private void ThreadProc()
-        {
-            webCameraControl = new WebCameraControl();
+			for(int a=0; a< filterInfoCollection.Count; a++)
+			{
+				Console.WriteLine(a + " - " + filterInfoCollection[a].Name);
+			}
 
-            foreach (var c in webCameraControl.GetVideoCaptureDevices())
-            {
-                if (c != null)
-                {
-                    Console.WriteLine("found camera");
-                    camera = c;
-                    break;
-                }
-            }
-            if (camera != null)
-            {
-                webCameraControl.StartCapture(camera);
-                webCameraControl.RenderSize = new System.Windows.Size(100, 100);
-                System.Threading.Thread.Sleep(2000);
-                while(true)
-                {
-                    System.Threading.Thread.Sleep(50);
-                    CaptureAndSend();
-                }
-                System.Threading.Thread.Sleep(250);
-                webCameraControl.StopCapture();
-            }
+			//int input;
+			try
+			{
+				int input = Int32.Parse(Console.ReadLine());
+				captureDevice = new VideoCaptureDevice(filterInfoCollection[input].MonikerString);
 
-            Console.WriteLine("end");
-        }
+				captureDevice.NewFrame += new NewFrameEventHandler(video_NewFrame);
+				captureDevice.Start();
+			} catch
+			{
+				Console.WriteLine("Not Valid Input");
+				return;
+			}
 
-        private void CaptureAndSend()
-        {
-            image = webCameraControl.GetCurrentImage();
-            onBitmapChanged?.Invoke(image);
+		}
 
-        }
+		private void video_NewFrame(object sender, NewFrameEventArgs eventArgs)
+		{
+			onBitmapChanged?.Invoke(eventArgs.Frame);
+		}
     }
 }
